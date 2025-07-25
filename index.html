@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Flip Cards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1.125rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Flip Card Styles */
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 320px;
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.7s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .flip-card-front {
+            background-color: white;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        /* Front Card Styles */
+        .card-image {
+            width: 100%;
+            height: 192px;
+            object-fit: cover;
+            position: relative;
+        }
+
+        .card-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
+        }
+
+        .card-content {
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Back Card Styles */
+        .back-content {
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .category-badge {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            width: fit-content;
+        }
+
+        .back-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .back-description {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .back-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .back-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .ticket-btn {
+            background-color: white;
+            color: #9333ea;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .ticket-btn:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Upcoming Events</h1>
+            <p>Hover over the cards to see more details</p>
+        </div>
+        
+        <div class="cards-grid" id="cardsContainer">
+            <!-- Cards will be generated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Event data
+        const eventData = [
+            {
+                id: '1',
+                title: 'Roaring 20s Speakeasy',
+                image: 'https://images.unsplash.com/photo-1510076857177-7470076d4098?w=400&h=300&fit=crop',
+                date: '08/13/21 - 08/14/25',
+                time: '03:00 - 11:00',
+                location: 'Drive Service Road East, New York',
+                description: 'Step back in time to the roaring 20s at our Speakeasy party. Don your finest flapper dresses and fedoras and join us for an evening of prohibition-era fun. Sip on classic cocktails, enjoy live music, and let the good times roll.',
+                category: 'Party'
+            },
+            {
+                id: '2',
+                title: 'Jazz Night at the Speakeasy',
+                image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop',
+                date: '02/10/21 - 02/11/25',
+                time: '01:00 - 11:00',
+                location: '33rd Street Queens, New York',
+                description: 'Experience the smooth sounds of jazz in an intimate speakeasy setting. Join us for an evening of world-class jazz performances featuring local and touring musicians.',
+                category: 'Music'
+            },
+            {
+                id: '3',
+                title: 'Music at the Cathedral',
+                image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop',
+                date: '02/10/21 - 02/11/25',
+                time: '12:00 - 08:00',
+                location: 'Boulevard Que, New York',
+                description: 'A sacred musical experience in one of New York\'s most beautiful cathedrals. Enjoy classical performances that showcase the incredible acoustics.',
+                category: 'Classical'
+            },
+            {
+                id: '4',
+                title: 'Jazz Soiree',
+                image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop',
+                date: '02/10/21 - 02/11/25',
+                time: '02:00 - 08:00',
+                location: 'Avenue Queens, New York',
+                description: 'An elegant evening of jazz featuring both emerging and established artists. Come dressed to impress for this sophisticated musical gathering.',
+                category: 'Jazz'
+            },
+            {
+                id: '5',
+                title: 'Tropical Oasis Party',
+                image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop',
+                date: '06/14/21 - 06/15/25',
+                time: '02:00 - 08:00',
+                location: 'Avenue Queens, New York',
+                description: 'Escape to paradise at our tropical-themed pool party. Enjoy refreshing cocktails, tropical beats, and summer vibes.',
+                category: 'Pool Party'
+            },
+            {
+                id: '6',
+                title: 'Jazz Under the Stars',
+                image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=300&fit=crop',
+                date: '05/14/21 - 06/15/25',
+                time: '02:00 - 08:00',
+                location: '275 Liberty Ave Brooklyn, New York',
+                description: 'An outdoor jazz experience under the night sky. Bring a blanket and enjoy world-class jazz performances in Brooklyn.',
+                category: 'Outdoor'
+            }
+        ];
+
+        // SVG Icons as strings
+        const icons = {
+            calendar: '<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>',
+            clock: '<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+            location: '<svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>'
+        };
+
+        // Generate cards
+        function generateCards() {
+            const container = document.getElementById('cardsContainer');
+            
+            eventData.forEach(event => {
+                const cardHTML = `
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <!-- Front Side -->
+                            <div class="flip-card-front">
+                                <img src="${event.image}" alt="${event.title}" class="card-image">
+                                <div class="card-content">
+                                    <h3 class="card-title">${event.title}</h3>
+                                    <div class="card-details">
+                                        <div class="detail-item">
+                                            ${icons.calendar}
+                                            <span>${event.date}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            ${icons.clock}
+                                            <span>${event.time}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            ${icons.location}
+                                            <span>${event.location}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Back Side -->
+                            <div class="flip-card-back">
+                                <div class="back-content">
+                                    <div>
+                                        <div class="category-badge">${event.category}</div>
+                                        <h3 class="back-title">${event.title}</h3>
+                                        <p class="back-description">${event.description}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="back-details">
+                                            <div class="back-detail-item">
+                                                ${icons.calendar}
+                                                <span>${event.date}</span>
+                                            </div>
+                                            <div class="back-detail-item">
+                                                ${icons.clock}
+                                                <span>${event.time}</span>
+                                            </div>
+                                            <div class="back-detail-item">
+                                                ${icons.location}
+                                                <span>${event.location}</span>
+                                            </div>
+                                        </div>
+                                        <button class="ticket-btn" onclick="handleTicketClick('${event.id}')">Get Tickets</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        // Handle ticket button click
+        function handleTicketClick(eventId) {
+            const event = eventData.find(e => e.id === eventId);
+            alert(`Tickets for "${event.title}" - This would normally open a booking system!`);
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCards();
+        });
+    </script>
+</body>
+</html>
